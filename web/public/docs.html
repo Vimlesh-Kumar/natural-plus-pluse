@@ -1,0 +1,340 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Natural++ Documentation</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg-main: #121212;
+        --bg-panel: #1e1e1e;
+        --primary: #4caf50;
+        --primary-hover: #45a049;
+        --text-primary: #f0f0f0;
+        --text-muted: #ababab;
+        --border: #333;
+        --accent: #50fa7b;
+        --code-bg: #282a36;
+      }
+
+      body {
+        margin: 0;
+        font-family: "Inter", sans-serif;
+        background-color: var(--bg-main);
+        color: var(--text-primary);
+        line-height: 1.6;
+      }
+
+      .container {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 40px 20px;
+      }
+
+      .header {
+        text-align: center;
+        margin-bottom: 50px;
+        padding-bottom: 20px;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .header h1 {
+        font-size: 42px;
+        margin-bottom: 10px;
+        color: white;
+      }
+
+      .header p {
+        color: var(--text-muted);
+        font-size: 18px;
+      }
+
+      .badge {
+        background-color: var(--primary);
+        color: white;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+        vertical-align: middle;
+        margin-left: 10px;
+      }
+
+      h2 {
+        font-size: 28px;
+        color: var(--accent);
+        margin-top: 50px;
+        border-bottom: 1px solid var(--border);
+        padding-bottom: 10px;
+      }
+      h3 {
+        font-size: 20px;
+        color: white;
+        margin-top: 30px;
+      }
+
+      /* Beautiful Code Blocks */
+      pre {
+        background-color: var(--code-bg);
+        border-radius: 8px;
+        padding: 16px;
+        overflow-x: auto;
+        border: 1px solid var(--border);
+        margin: 15px 0;
+        position: relative;
+      }
+
+      code {
+        font-family: "Fira Code", monospace;
+        font-size: 14px;
+        color: #f8f8f2;
+      }
+
+      p > code {
+        background-color: #2b2b2b;
+        padding: 2px 6px;
+        border-radius: 4px;
+        color: #ffb86c;
+      }
+
+      .syn-keyword {
+        color: #ff79c6;
+      }
+      .syn-string {
+        color: #f1fa8c;
+      }
+      .syn-number {
+        color: #bd93f9;
+      }
+      .syn-operator {
+        color: #ff79c6;
+      }
+      .syn-function {
+        color: #50fa7b;
+      }
+      .syn-comment {
+        color: #6272a4;
+        font-style: italic;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 20px 0;
+        background: var(--bg-panel);
+        border-radius: 8px;
+        overflow: hidden;
+      }
+
+      th,
+      td {
+        text-align: left;
+        padding: 12px 16px;
+        border-bottom: 1px solid var(--border);
+      }
+
+      th {
+        background-color: #2b2b2b;
+      }
+      tr:last-child td {
+        border-bottom: none;
+      }
+
+      .callout {
+        background-color: rgba(76, 175, 80, 0.1);
+        border-left: 4px solid var(--primary);
+        padding: 15px 20px;
+        border-radius: 4px;
+        margin: 20px 0;
+      }
+
+      .nav-btn {
+        display: inline-flex;
+        align-items: center;
+        padding: 10px 20px;
+        background: #444;
+        color: white;
+        text-decoration: none;
+        border-radius: 4px;
+        font-weight: 600;
+        margin-bottom: 20px;
+        transition: background 0.2s;
+      }
+
+      .nav-btn:hover {
+        background: #555;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <a href="index.html" class="nav-btn">← Back to IDE</a>
+
+      <div class="header">
+        <h1>Natural++ Documentation <span class="badge">Docs</span></h1>
+        <p>
+          The programming language designed to run like pure human English
+          natively inside a custom C++ Engine.
+        </p>
+      </div>
+
+      <div class="callout">
+        <strong>💡 Philosophy:</strong> Natural++ removes curly braces {},
+        semicolons ;, and confusing traditional syntaxes replacing them with
+        logical, spoken sentences.
+      </div>
+
+      <!-- Section: Comments -->
+      <h2>1. Comments</h2>
+      <p>
+        Sometimes you need to write notes in your code for yourself or other
+        humans. These are ignored by the compiler. Start a line with
+        <code class="syn-comment">note:</code>.
+      </p>
+      <pre><code><span class="syn-comment">note: This is a comment. It will not execute.</span>
+<span class="syn-comment">note: Use comments to document your logic.</span></code></pre>
+
+      <!-- Section: Variables -->
+      <h2>2. Variables and Constants</h2>
+      <p>
+        Everything needs to be stored somewhere. You can create variables
+        (storage spaces) to hold numbers or text (strings).
+      </p>
+
+      <h3>Creating a Variable</h3>
+      <p>
+        Use
+        <code class="syn-keyword">create variable [name] equal to [value]</code
+        >.
+      </p>
+      <pre><code><span class="syn-keyword">create variable</span> count <span class="syn-keyword">equal to</span> <span class="syn-number">10</span>
+<span class="syn-keyword">create variable</span> user_name <span class="syn-keyword">equal to</span> <span class="syn-string">"Vimlesh"</span></code></pre>
+
+      <h3>Updating an Existing Variable</h3>
+      <p>Use <code class="syn-keyword">set [name] to [value]</code>.</p>
+      <pre><code><span class="syn-keyword">set</span> count <span class="syn-keyword">to</span> <span class="syn-number">20</span>
+<span class="syn-keyword">set</span> count <span class="syn-keyword">to</span> count <span class="syn-operator">plus</span> <span class="syn-number">5</span></code></pre>
+
+      <!-- Section: Display Output -->
+      <h2>3. Displaying Output</h2>
+      <p>
+        Want to write data out to the terminal? You can use the
+        <code class="syn-function">display</code> command.
+      </p>
+      <pre><code><span class="syn-function">display</span> <span class="syn-string">"Hello, World!"</span>
+<span class="syn-function">display</span> user_name
+<span class="syn-function">display</span> count</code></pre>
+
+      <!-- Section: Control Flow -->
+      <h2>4. Logic / If Statements</h2>
+      <p>
+        Programs need to make decisions. Natural++ reads like a conversation
+        when you use <code class="syn-keyword">if ... then</code> statements.
+      </p>
+
+      <pre><code><span class="syn-keyword">create variable</span> age <span class="syn-keyword">equal to</span> <span class="syn-number">18</span>
+
+<span class="syn-keyword">if</span> age <span class="syn-operator">is greater than or equal to</span> <span class="syn-number">18</span> <span class="syn-keyword">then</span>
+    <span class="syn-function">display</span> <span class="syn-string">"You are an adult."</span>
+<span class="syn-keyword">otherwise</span>
+    <span class="syn-function">display</span> <span class="syn-string">"You are a minor."</span>
+<span class="syn-keyword">end if</span></code></pre>
+
+      <h3>Conditions Explained</h3>
+      <table>
+        <tr>
+          <th>English Syntax</th>
+          <th>Translates to Traditional Math</th>
+        </tr>
+        <tr>
+          <td><code>is equal to</code></td>
+          <td>==</td>
+        </tr>
+        <tr>
+          <td><code>is not equal to</code></td>
+          <td>!=</td>
+        </tr>
+        <tr>
+          <td><code>is greater than</code></td>
+          <td>&gt;</td>
+        </tr>
+        <tr>
+          <td><code>is less than</code></td>
+          <td>&lt;</td>
+        </tr>
+        <tr>
+          <td><code>is greater than or equal to</code></td>
+          <td>&gt;=</td>
+        </tr>
+        <tr>
+          <td><code>is less than or equal to</code></td>
+          <td>&lt;=</td>
+        </tr>
+      </table>
+
+      <!-- Section: Loops -->
+      <h2>5. Loops (Repeating Actions)</h2>
+      <p>
+        If you need to iterate, Natural++ currently supports two robust loop
+        patterns: <b>While Loops</b> and <b>Repeat Times</b>.
+      </p>
+
+      <h3>Repeat X Times</h3>
+      <p>If you know exactly how many times you want a block to execute:</p>
+      <pre><code><span class="syn-keyword">repeat</span> <span class="syn-number">5</span> <span class="syn-keyword">times</span>
+    <span class="syn-function">display</span> <span class="syn-string">"Knock knock!"</span>
+<span class="syn-keyword">end repeat</span></code></pre>
+
+      <h3>While Condition Is True</h3>
+      <p>Continues to repeat until a logic check becomes false:</p>
+      <pre><code><span class="syn-keyword">create variable</span> money <span class="syn-keyword">equal to</span> <span class="syn-number">0</span>
+
+<span class="syn-keyword">while</span> money <span class="syn-operator">is less than</span> <span class="syn-number">100</span> <span class="syn-keyword">do</span>
+    <span class="syn-function">display</span> <span class="syn-string">"Working..."</span>
+    <span class="syn-keyword">set</span> money <span class="syn-keyword">to</span> money <span class="syn-operator">plus</span> <span class="syn-number">20</span>
+<span class="syn-keyword">end while</span>
+
+<span class="syn-function">display</span> <span class="syn-string">"Done working!"</span></code></pre>
+
+      <!-- Section: Math -->
+      <h2>6. Math Operations</h2>
+      <p>Mathematical calculations use standard spoken terms.</p>
+      <ul>
+        <li><code>plus</code> (+)</li>
+        <li><code>minus</code> (-)</li>
+        <li><code>times</code> (*)</li>
+      </ul>
+
+      <pre><code><span class="syn-keyword">set</span> score <span class="syn-keyword">to</span> count <span class="syn-operator">times</span> <span class="syn-number">10</span>
+<span class="syn-keyword">set</span> health <span class="syn-keyword">to</span> health <span class="syn-operator">minus</span> <span class="syn-number">5</span></code></pre>
+
+      <!-- Full Example -->
+      <h2>7. Putting It All Together</h2>
+      <p>
+        Here is a complete program that utilizes variables, maths, conditionals,
+        and loops organically:
+      </p>
+
+      <pre><code><span class="syn-comment">note: The Classic FizzBuzz (Modified for Natural++)</span>
+
+<span class="syn-keyword">create variable</span> number <span class="syn-keyword">equal to</span> <span class="syn-number">1</span>
+
+<span class="syn-keyword">while</span> number <span class="syn-operator">is less than or equal to</span> <span class="syn-number">5</span> <span class="syn-keyword">do</span>
+    <span class="syn-keyword">if</span> number <span class="syn-operator">is equal to</span> <span class="syn-number">3</span> <span class="syn-keyword">then</span>
+        <span class="syn-function">display</span> <span class="syn-string">"It is three!"</span>
+    <span class="syn-keyword">otherwise</span>
+        <span class="syn-function">display</span> number
+    <span class="syn-keyword">end if</span>
+    
+    <span class="syn-keyword">set</span> number <span class="syn-keyword">to</span> number <span class="syn-operator">plus</span> <span class="syn-number">1</span>
+<span class="syn-keyword">end while</span></code></pre>
+
+      <div class="header" style="margin-top: 50px; border-bottom: none">
+        <p>Happy Coding natively with Natural++! 🚀</p>
+      </div>
+    </div>
+  </body>
+</html>
