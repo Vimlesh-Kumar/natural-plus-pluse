@@ -54,6 +54,8 @@ h1, h2, h3 { margin: 0; }
   margin-left: 6px;
 }
 
+.header-actions { display: flex; align-items: center; gap: 12px; }
+
 .btn {
   padding: 8px 16px;
   border: none;
@@ -142,6 +144,7 @@ h1, h2, h3 { margin: 0; }
   padding-top: 20px;
 }
 .sidebar h2 { font-size: 18px; color: var(--accent); padding: 0 20px; margin-bottom: 20px; }
+.sidebar-btn-container { padding: 0 20px 20px 20px; border-bottom: 1px solid var(--border); margin-bottom: 20px; }
 .sidebar a {
   display: block; color: var(--text-primary); padding: 10px 20px;
   text-decoration: none; font-size: 15px; transition: background 0.2s, color 0.2s;
@@ -152,8 +155,16 @@ h1, h2, h3 { margin: 0; }
 .main-content {
   flex: 1;
   padding: 40px 60px;
-  max-width: 900px;
   overflow-y: auto;
+  border-right: 1px solid var(--border);
+}
+
+.docs-ide-pane {
+  width: 450px;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bg-main);
+  border-left: 1px solid var(--border);
 }
 
 .docs-header {
@@ -194,20 +205,33 @@ hr { border: 0; height: 1px; background: var(--border); margin: 40px 0; }
 .example-box pre { margin: 0; background: none; border: none; padding: 0; }
 
 .try-it-btn {
-  display: inline-block; background-color: var(--primary); color: white;
+  display: inline-flex; align-items: center; gap: 6px;
+  background-color: var(--primary); color: white;
   padding: 8px 16px; text-decoration: none; border-radius: 4px; font-weight: bold;
-  font-size: 14px; margin-top: 15px;
+  font-size: 14px; margin-top: 15px; cursor: pointer; border: none;
 }
 .try-it-btn:hover { background-color: var(--primary-hover); }
+
+.copy-btn {
+  position: absolute; top: 8px; right: 8px;
+  background-color: #444; color: white; border: none;
+  border-radius: 4px; padding: 4px 10px; font-size: 12px; cursor: pointer;
+  display: flex; align-items: center; gap: 4px; transition: 0.2s background-color;
+}
+.copy-btn:hover { background-color: #666; }
+.copy-btn.copied { background-color: var(--primary); }
+.code-wrapper { position: relative; margin: 20px 0 30px 0; }
+.code-wrapper pre { margin: 0; }
 
 pre {
   background-color: var(--code-bg); border-radius: 8px; padding: 20px;
   overflow-x: auto; border: 1px solid var(--border); margin: 20px 0 30px 0;
 }
 code { font-family: 'Fira Code', monospace; font-size: 15px; color: #f8f8f2; }
+code { font-family: 'Fira Code', monospace; font-size: 15px; color: #f8f8f2; }
 p > code, li > code {
   background-color: #2b2b2b; padding: 2px 6px; border-radius: 4px;
-  color: #ffb86c; font-size: 14px;
+  color: #ffb86c; font-size: 14px; white-space: nowrap;
 }
 
 /* Syntax Highlighting */

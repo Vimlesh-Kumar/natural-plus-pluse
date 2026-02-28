@@ -1,29 +1,138 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { Link } from "react-router-dom";
+import CodeMirror from '@uiw/react-codemirror';
+import { dracula } from '@uiw/codemirror-theme-dracula';
+import { StreamLanguage } from '@codemirror/language';
+import { Play } from 'lucide-react';
+
+const naturalLanguage = StreamLanguage.define({
+  token(stream) {
+    if (stream.match(/"([^"\\]|\\.)*"/)) return "string";
+    if (stream.match(/(?:plus|minus|times|divided by|modulo|is equal to|is greater than|is less than|and|or)\b/)) return "operator";
+    if (stream.match(/(?:create|variable|constant|set|to|if|then|otherwise|while|do|repeat|times|end|function|call|with|parameter|parameters|as|display|show|add|return)\b/)) return "keyword";
+    if (stream.match(/0x[a-f\d]+|[-+]?(?:\.\d+|\d+\.?\d*)(?:e[-+]?\d+)?/i)) return "number";
+    if (stream.match(/note:.*/)) return "comment";
+    if (stream.match(/[a-zA-Z_]\w*/)) return "variableName";
+    stream.next();
+    return null;
+  }
+});
+
+const CodeBlock = ({ code, onTryIt }) => {
+  const [copied, setCopied] = useState(false);
+  const handleCopy = () => {
+    navigator.clipboard.writeText(code);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+  return (
+    <div className="example-box">
+      <h4>Example in Natural++</h4>
+      <div className="code-wrapper">
+        <button className={`copy-btn \${copied ? 'copied' : ''}`} onClick={handleCopy}>
+          {copied ? '✓ Copied' : 'Copy'}
+        </button>
+        <div style={{ borderRadius: '6px', overflow: 'hidden' }}>
+          <CodeMirror
+            value={code}
+            theme={dracula}
+            extensions={[naturalLanguage]}
+            editable={false}
+            basicSetup={{ lineNumbers: false, foldGutter: false, highlightActiveLine: false }}
+          />
+        </div>
+      </div>
+      <button className="try-it-btn" onClick={() => onTryIt(code)}>
+        <Play size={14} /> Try it Yourself »
+      </button>
+    </div>
+  );
+};
 
 export default function Docs() {
   const [activeSection, setActiveSection] = useState("home");
+  
+  // Right side IDE State
+  const [ideCode, setIdeCode] = useState('note: Click "Try it Yourself"\\nnote: on any example to load it here!\\n\\ndisplay "Hello World!"\\n');
+  const [running, setRunning] = useState(false);
+  const [terminalOutput, setTerminalOutput] = useState([
+    { text: 'Waiting for execution...', isError: false, startup: true }
+  ]);
+  const endOfTerminalRef = useRef(null);
+
+  useEffect(() => {
+    endOfTerminalRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [terminalOutput]);
+
+  const loadExample = (code) => {
+    setIdeCode(code);
+  };
+
+  const clearTerminal = () => setTerminalOutput([]);
+
+  const runCode = async () => {
+    setRunning(true);
+    const newOutput = [...terminalOutput, { text: '> Running code...', isError: false }];
+    setTerminalOutput(newOutput);
+
+    try {
+      const response = await fetch('/api/run', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: ideCode })
+      });
+
+      const result = await response.json();
+      
+      setTerminalOutput(prev => {
+        let nxt = [...prev];
+        if (result.error && !result.output) {
+          nxt.push({ text: result.error, isError: true });
+        } else {
+          if (result.output) nxt.push({ text: result.output, isError: false });
+          if (result.error) nxt.push({ text: result.error, isError: true });
+          nxt.push({ text: '> Program finished with exit status 0.\\n', isError: false });
+        }
+        return nxt;
+      });
+    } catch (error) {
+      setTerminalOutput(prev => [...prev, { text: `Execution failed: ${error.message}`, isError: true }]);
+    } finally {
+      setRunning(false);
+    }
+  };
+
 
   useEffect(() => {
     const handleScroll = () => {
-      const sections = document.querySelectorAll("section");
+      const sections = document.querySelectorAll(".main-content section");
       let current = "home";
       sections.forEach((section) => {
-        const sectionTop = section.offsetTop;
-        if (window.scrollY >= sectionTop - 150) {
+        // Adjust scroll offset to catch active section correctly
+        const sectionTop = section.offsetTop - 300;
+        const mainContent = document.querySelector(".main-content");
+        if (mainContent && mainContent.scrollTop >= sectionTop) {
           current = section.getAttribute("id");
         }
       });
       setActiveSection(current);
     };
 
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    const mainContent = document.querySelector(".main-content");
+    if (mainContent) {
+      mainContent.addEventListener("scroll", handleScroll);
+      return () => mainContent.removeEventListener("scroll", handleScroll);
+    }
   }, []);
 
   return (
     <div className="docs-page">
       <div className="sidebar">
+        <div className="sidebar-btn-container">
+          <Link to="/" className="nav-btn" style={{ width: '100%', justifyContent: 'center' }}>
+            ← Back to IDE
+          </Link>
+        </div>
         <h2>Natural++ Tutorial</h2>
         <a href="#home" className={activeSection === "home" ? "active" : ""}>
           Natural++ Home
@@ -31,70 +140,37 @@ export default function Docs() {
         <a href="#intro" className={activeSection === "intro" ? "active" : ""}>
           Natural++ Intro
         </a>
-        <a
-          href="#getstarted"
-          className={activeSection === "getstarted" ? "active" : ""}
-        >
+        <a href="#getstarted" className={activeSection === "getstarted" ? "active" : ""}>
           Natural++ Get Started
         </a>
-        <a
-          href="#syntax"
-          className={activeSection === "syntax" ? "active" : ""}
-        >
+        <a href="#syntax" className={activeSection === "syntax" ? "active" : ""}>
           Natural++ Syntax
         </a>
-        <a
-          href="#output"
-          className={activeSection === "output" ? "active" : ""}
-        >
+        <a href="#output" className={activeSection === "output" ? "active" : ""}>
           Natural++ Output
         </a>
-        <a
-          href="#comments"
-          className={activeSection === "comments" ? "active" : ""}
-        >
+        <a href="#comments" className={activeSection === "comments" ? "active" : ""}>
           Natural++ Comments
         </a>
-        <a
-          href="#variables"
-          className={activeSection === "variables" ? "active" : ""}
-        >
+        <a href="#variables" className={activeSection === "variables" ? "active" : ""}>
           Natural++ Variables
         </a>
-        <a
-          href="#datatypes"
-          className={activeSection === "datatypes" ? "active" : ""}
-        >
+        <a href="#datatypes" className={activeSection === "datatypes" ? "active" : ""}>
           Natural++ Data Types
         </a>
-        <a
-          href="#operators"
-          className={activeSection === "operators" ? "active" : ""}
-        >
+        <a href="#operators" className={activeSection === "operators" ? "active" : ""}>
           Natural++ Operators
         </a>
-        <a
-          href="#booleans"
-          className={activeSection === "booleans" ? "active" : ""}
-        >
+        <a href="#booleans" className={activeSection === "booleans" ? "active" : ""}>
           Natural++ Booleans
         </a>
-        <a
-          href="#conditions"
-          className={activeSection === "conditions" ? "active" : ""}
-        >
+        <a href="#conditions" className={activeSection === "conditions" ? "active" : ""}>
           Natural++ Conditions
         </a>
-        <a
-          href="#whileloop"
-          className={activeSection === "whileloop" ? "active" : ""}
-        >
+        <a href="#whileloop" className={activeSection === "whileloop" ? "active" : ""}>
           Natural++ While Loop
         </a>
-        <a
-          href="#repeatloop"
-          className={activeSection === "repeatloop" ? "active" : ""}
-        >
+        <a href="#repeatloop" className={activeSection === "repeatloop" ? "active" : ""}>
           Natural++ Repeat Loop
         </a>
       </div>
@@ -107,9 +183,6 @@ export default function Docs() {
               Learn to code using normal English language sentences!
             </p>
           </div>
-          <Link to="/" className="nav-btn">
-            ← Back to IDE
-          </Link>
         </div>
 
         {/* HOME */}
@@ -127,29 +200,10 @@ export default function Docs() {
               <code>;</code>.
             </p>
           </div>
-          <div className="example-box">
-            <h4>Example in Natural++</h4>
-            <pre>
-              <code>
-                <span className="syn-keyword">create variable</span> count{" "}
-                <span className="syn-keyword">equal to</span>{" "}
-                <span className="syn-number">1</span>
-                <span className="syn-keyword">while</span> count{" "}
-                <span className="syn-operator">is less than or equal to</span>{" "}
-                <span className="syn-number">5</span>{" "}
-                <span className="syn-keyword">do</span>
-                <span className="syn-function">display</span> count
-                <span className="syn-keyword">set</span> count{" "}
-                <span className="syn-keyword">to</span> count{" "}
-                <span className="syn-operator">plus</span>{" "}
-                <span className="syn-number">1</span>
-                <span className="syn-keyword">end while</span>
-              </code>
-            </pre>
-            <Link to="/" className="try-it-btn">
-              Try it Yourself »
-            </Link>
-          </div>
+          <CodeBlock 
+            onTryIt={loadExample} 
+            code={`create variable count equal to 1\\n\\nwhile count is less than or equal to 5 do\\n    display count\\n    set count to count plus 1\\nend while`}
+          />
         </section>
 
         <hr />
@@ -189,7 +243,8 @@ export default function Docs() {
           <p>
             To get started with Natural++, you don't need to install anything!
             You can use our Web IDE directly to write and execute code in real
-            time.
+            time. By clicking "Try it Yourself" on any of the examples below, you 
+            can instantly run and modify the code in the runner on the right!
           </p>
         </section>
 
@@ -201,30 +256,18 @@ export default function Docs() {
             A Natural++ script is executed line by line. Every line represents
             an instruction.
           </p>
-          <div className="example-box">
-            <h4>Example</h4>
-            <pre>
-              <code>
-                <span className="syn-function">display</span>{" "}
-                <span className="syn-string">"Hello World!"</span>
-              </code>
-            </pre>
-          </div>
+          
+          <CodeBlock onTryIt={loadExample} code={`display "Hello World!"`} />
+
           <h3>Omitted Characters</h3>
           <p>
             Unlike languages such as C++ or JavaScript, Natural++ does{" "}
             <strong>not</strong> use:
           </p>
           <ul>
-            <li>
-              Semicolons <code>;</code> at the ends of lines.
-            </li>
-            <li>
-              Parentheses <code>()</code> around conditions.
-            </li>
-            <li>
-              Curly brackets <code>{"{ }"}</code> to group code blocks.
-            </li>
+            <li>Semicolons <code>;</code> at the ends of lines.</li>
+            <li>Parentheses <code>()</code> around conditions.</li>
+            <li>Curly brackets <code>{"{ }"}</code> to group code blocks.</li>
           </ul>
         </section>
 
@@ -237,24 +280,11 @@ export default function Docs() {
             <code className="syn-function">display</code> or{" "}
             <code className="syn-function">show</code> keyword.
           </p>
-          <div className="example-box">
-            <h4>Example (Outputting Text)</h4>
-            <pre>
-              <code>
-                <span className="syn-function">display</span>{" "}
-                <span className="syn-string">"I am learning Natural++"</span>
-                <span className="syn-function">show</span>{" "}
-                <span className="syn-string">"It is very easy to read!"</span>
-              </code>
-            </pre>
-          </div>
+          
+          <CodeBlock onTryIt={loadExample} code={`display "I am learning Natural++"\\nshow "It is very easy to read!"`} />
+          
           <p>You can also display math or numbers directly without quotes.</p>
-          <pre>
-            <code>
-              <span className="syn-function">display</span>{" "}
-              <span className="syn-number">300</span>
-            </code>
-          </pre>
+          <CodeBlock onTryIt={loadExample} code={`display 300`} />
         </section>
 
         <hr />
@@ -270,16 +300,7 @@ export default function Docs() {
             To create a comment, simply start the line with{" "}
             <code className="syn-comment">note:</code>.
           </p>
-          <div className="example-box">
-            <h4>Example</h4>
-            <pre>
-              <code>
-                <span className="syn-comment">note: This is a comment</span>
-                <span className="syn-function">display</span>{" "}
-                <span className="syn-string">"Hello World!"</span>
-              </code>
-            </pre>
-          </div>
+          <CodeBlock onTryIt={loadExample} code={`note: This is a comment\\ndisplay "Hello World!"`} />
         </section>
 
         <hr />
@@ -305,21 +326,7 @@ export default function Docs() {
             </code>
           </pre>
 
-          <div className="example-box">
-            <h4>Example</h4>
-            <pre>
-              <code>
-                <span className="syn-keyword">create variable</span> name{" "}
-                <span className="syn-keyword">equal to</span>{" "}
-                <span className="syn-string">"John Doe"</span>
-                <span className="syn-keyword">create variable</span> age{" "}
-                <span className="syn-keyword">equal to</span>{" "}
-                <span className="syn-number">35</span>
-                <span className="syn-function">display</span> name
-                <span className="syn-function">display</span> age
-              </code>
-            </pre>
-          </div>
+          <CodeBlock onTryIt={loadExample} code={`create variable name equal to "John Doe"\\ncreate variable age equal to 35\\n\\ndisplay name\\ndisplay age`} />
 
           <h3>Assigning / Updating Variables</h3>
           <p>
@@ -327,17 +334,7 @@ export default function Docs() {
             <code className="syn-keyword">set</code> and{" "}
             <code className="syn-keyword">to</code>.
           </p>
-          <pre>
-            <code>
-              <span className="syn-keyword">create variable</span> x{" "}
-              <span className="syn-keyword">equal to</span>{" "}
-              <span className="syn-number">10</span>
-              <span className="syn-keyword">set</span> x{" "}
-              <span className="syn-keyword">to</span>{" "}
-              <span className="syn-number">20</span>{" "}
-              <span className="syn-comment">note: x is now 20</span>
-            </code>
-          </pre>
+          <CodeBlock onTryIt={loadExample} code={`create variable x equal to 10\\nset x to 20\\n\\nnote: x is now 20\\ndisplay x`} />
         </section>
 
         <hr />
@@ -348,13 +345,9 @@ export default function Docs() {
             A variable in Natural++ can store different types of data under the
             hood. Currently, the most used ones are:
           </p>
-          <ul>
-            <li>
-              <strong>Numbers</strong>: <code>10</code>, <code>3.14</code>
-            </li>
-            <li>
-              <strong>Strings</strong>: <code>"Hello"</code>
-            </li>
+           <ul>
+            <li><strong>Numbers</strong>: <code>10</code>, <code>3.14</code></li>
+            <li><strong>Strings</strong>: <code>"Hello"</code></li>
           </ul>
         </section>
 
@@ -372,116 +365,27 @@ export default function Docs() {
           <h3>Arithmetic Operators</h3>
           <table>
             <tbody>
-              <tr>
-                <th>English Keyword</th>
-                <th>Meaning</th>
-                <th>Example</th>
-              </tr>
-              <tr>
-                <td>
-                  <code>plus</code>
-                </td>
-                <td>Addition</td>
-                <td>
-                  <code>x plus y</code>
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <code>minus</code>
-                </td>
-                <td>Subtraction</td>
-                <td>
-                  <code>x minus y</code>
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <code>times</code>
-                </td>
-                <td>Multiplication</td>
-                <td>
-                  <code>x times y</code>
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <code>divided by</code>
-                </td>
-                <td>Division</td>
-                <td>
-                  <code>x divided by y</code>
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <code>modulo</code>
-                </td>
-                <td>Remainder</td>
-                <td>
-                  <code>x modulo y</code>
-                </td>
-              </tr>
+              <tr><th>English Keyword</th><th>Meaning</th><th>Example</th></tr>
+              <tr><td><code>plus</code></td><td>Addition</td><td><code>x plus y</code></td></tr>
+              <tr><td><code>minus</code></td><td>Subtraction</td><td><code>x minus y</code></td></tr>
+              <tr><td><code>times</code></td><td>Multiplication</td><td><code>x times y</code></td></tr>
+              <tr><td><code>divided by</code></td><td>Division</td><td><code>x divided by y</code></td></tr>
+              <tr><td><code>modulo</code></td><td>Remainder</td><td><code>x modulo y</code></td></tr>
             </tbody>
           </table>
 
-          <div className="example-box">
-            <h4>Example</h4>
-            <pre>
-              <code>
-                <span className="syn-keyword">create variable</span> sum{" "}
-                <span className="syn-keyword">equal to</span>{" "}
-                <span className="syn-number">100</span>{" "}
-                <span className="syn-operator">plus</span>{" "}
-                <span className="syn-number">50</span>
-                <span className="syn-function">display</span> sum
-              </code>
-            </pre>
-          </div>
+          <CodeBlock onTryIt={loadExample} code={`create variable sum equal to 100 plus 50\\ndisplay sum`} />
 
           <h3>Comparison Operators</h3>
           <table>
             <tbody>
-              <tr>
-                <th>English Keyword</th>
-                <th>Meaning (C++)</th>
-              </tr>
-              <tr>
-                <td>
-                  <code>is equal to</code>
-                </td>
-                <td>==</td>
-              </tr>
-              <tr>
-                <td>
-                  <code>is not equal to</code>
-                </td>
-                <td>!=</td>
-              </tr>
-              <tr>
-                <td>
-                  <code>is greater than</code>
-                </td>
-                <td>&gt;</td>
-              </tr>
-              <tr>
-                <td>
-                  <code>is less than</code>
-                </td>
-                <td>&lt;</td>
-              </tr>
-              <tr>
-                <td>
-                  <code>is greater than or equal to</code>
-                </td>
-                <td>&gt;=</td>
-              </tr>
-              <tr>
-                <td>
-                  <code>is less than or equal to</code>
-                </td>
-                <td>&lt;=</td>
-              </tr>
+              <tr><th>English Keyword</th><th>Meaning (C++)</th></tr>
+              <tr><td><code>is equal to</code></td><td>==</td></tr>
+              <tr><td><code>is not equal to</code></td><td>!=</td></tr>
+              <tr><td><code>is greater than</code></td><td>&gt;</td></tr>
+              <tr><td><code>is less than</code></td><td>&lt;</td></tr>
+              <tr><td><code>is greater than or equal to</code></td><td>&gt;=</td></tr>
+              <tr><td><code>is less than or equal to</code></td><td>&lt;=</td></tr>
             </tbody>
           </table>
         </section>
@@ -494,88 +398,48 @@ export default function Docs() {
             In Natural++, Boolean expressions return true or false implicitly
             when you use the comparison operators.
           </p>
-          <div className="example-box">
-            <h4>Example</h4>
-            <pre>
-              <code>
-                <span className="syn-keyword">create variable</span> x{" "}
-                <span className="syn-keyword">equal to</span>{" "}
-                <span className="syn-number">10</span>
-                <span className="syn-keyword">create variable</span> y{" "}
-                <span className="syn-keyword">equal to</span>{" "}
-                <span className="syn-number">9</span>
-                <span className="syn-comment">
-                  note: This will evaluate internally to true
-                </span>
-                <span className="syn-keyword">if</span> x{" "}
-                <span className="syn-operator">is greater than</span> y{" "}
-                <span className="syn-keyword">then</span>
-                <span className="syn-function">display</span>{" "}
-                <span className="syn-string">"Math works!"</span>
-                <span className="syn-keyword">end if</span>
-              </code>
-            </pre>
-          </div>
+          <CodeBlock onTryIt={loadExample} code={`create variable x equal to 10\\ncreate variable y equal to 9\\n\\nnote: This will evaluate internally to true\\nif x is greater than y then\\n    display "Math works!"\\nend if`} />
         </section>
 
         <hr />
 
         <section id="conditions">
-          <h2 className="section-title">
-            Natural++ Conditions and If Statements
-          </h2>
+          <h2 className="section-title">Natural++ Conditions and If Statements</h2>
           <p>
             Natural++ supports the usual logical conditions from mathematics
             natively into English statements.
           </p>
 
-          <h3>
-            The <code>if ... then</code> Statement
-          </h3>
+          <h3>The <code>if ... then</code> Statement</h3>
           <pre>
             <code>
               <span className="syn-keyword">if</span> <em>condition</em>{" "}
               <span className="syn-keyword">then</span>
-              <span className="syn-comment">
-                note: code block if condition is true
-              </span>
+              <br/>
+              &nbsp;&nbsp;&nbsp;&nbsp;<span className="syn-comment">note: code block if condition is true</span>
+              <br/>
               <span className="syn-keyword">end if</span>
             </code>
           </pre>
 
-          <div className="example-box">
-            <h4>Example</h4>
-            <pre>
-              <code>
-                <span className="syn-keyword">create variable</span> my_age{" "}
-                <span className="syn-keyword">equal to</span>{" "}
-                <span className="syn-number">20</span>
-                <span className="syn-keyword">if</span> my_age{" "}
-                <span className="syn-operator">
-                  is greater than or equal to
-                </span>{" "}
-                <span className="syn-number">18</span>{" "}
-                <span className="syn-keyword">then</span>
-                <span className="syn-function">display</span>{" "}
-                <span className="syn-string">"You can vote!"</span>
-                <span className="syn-keyword">end if</span>
-              </code>
-            </pre>
-          </div>
+          <CodeBlock onTryIt={loadExample} code={`create variable my_age equal to 20\\n\\nif my_age is greater than or equal to 18 then\\n    display "You can vote!"\\nend if`} />
 
-          <h3>
-            The <code>otherwise</code> Statement (Else)
-          </h3>
+          <h3>The <code>otherwise</code> Statement (Else)</h3>
           <pre>
             <code>
               <span className="syn-keyword">if</span> <em>condition</em>{" "}
               <span className="syn-keyword">then</span>
-              <span className="syn-comment">note: truthy run</span>
+              <br/>
+              &nbsp;&nbsp;&nbsp;&nbsp;<span className="syn-comment">note: truthy run</span>
+              <br/>
               <span className="syn-keyword">otherwise</span>
-              <span className="syn-comment">note: false run</span>
+              <br/>
+              &nbsp;&nbsp;&nbsp;&nbsp;<span className="syn-comment">note: false run</span>
+              <br/>
               <span className="syn-keyword">end if</span>
             </code>
           </pre>
+          <CodeBlock onTryIt={loadExample} code={`create variable score equal to 50\\n\\nif score is greater than 80 then\\n    display "Great job!"\\notherwise\\n    display "Try again!"\\nend if`} />
         </section>
 
         <hr />
@@ -586,37 +450,8 @@ export default function Docs() {
             The <code className="syn-keyword">while</code> loop loops through a
             block of code as long as a specified condition is true:
           </p>
-          <pre>
-            <code>
-              <span className="syn-keyword">while</span> <em>condition</em>{" "}
-              <span className="syn-keyword">do</span>
-              <span className="syn-comment">
-                note: code block to be executed
-              </span>
-              <span className="syn-keyword">end while</span>
-            </code>
-          </pre>
 
-          <div className="example-box">
-            <h4>Example</h4>
-            <pre>
-              <code>
-                <span className="syn-keyword">create variable</span> i{" "}
-                <span className="syn-keyword">equal to</span>{" "}
-                <span className="syn-number">0</span>
-                <span className="syn-keyword">while</span> i{" "}
-                <span className="syn-operator">is less than</span>{" "}
-                <span className="syn-number">5</span>{" "}
-                <span className="syn-keyword">do</span>
-                <span className="syn-function">display</span> i
-                <span className="syn-keyword">set</span> i{" "}
-                <span className="syn-keyword">to</span> i{" "}
-                <span className="syn-operator">plus</span>{" "}
-                <span className="syn-number">1</span>
-                <span className="syn-keyword">end while</span>
-              </code>
-            </pre>
-          </div>
+          <CodeBlock onTryIt={loadExample} code={`create variable i equal to 0\\n\\nwhile i is less than 5 do\\n    display i\\n    set i to i plus 1\\nend while`} />
         </section>
 
         <hr />
@@ -628,31 +463,52 @@ export default function Docs() {
             block of code.
           </p>
 
-          <pre>
-            <code>
-              <span className="syn-keyword">repeat</span> <em>amount</em>{" "}
-              <span className="syn-keyword">times</span>
-              <span className="syn-comment">
-                note: code block to be executed
-              </span>
-              <span className="syn-keyword">end repeat</span>
-            </code>
-          </pre>
-
-          <div className="example-box">
-            <h4>Example</h4>
-            <pre>
-              <code>
-                <span className="syn-keyword">repeat</span>{" "}
-                <span className="syn-number">3</span>{" "}
-                <span className="syn-keyword">times</span>
-                <span className="syn-function">display</span>{" "}
-                <span className="syn-string">"Hello"</span>
-                <span className="syn-keyword">end repeat</span>
-              </code>
-            </pre>
-          </div>
+          <CodeBlock onTryIt={loadExample} code={`repeat 3 times\\n    display "Hello"\\nend repeat`} />
         </section>
+        
+        <div style={{ paddingBottom: '100px' }}></div>
+      </div>
+
+      <div className="docs-ide-pane">
+        <div className="pane-header terminal-header" style={{ padding: '12px 16px', backgroundColor: '#333' }}>
+          <h3 style={{ color: 'white', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ color: '#4CAF50' }}>⚡</span> Code Runner
+          </h3>
+          <button className="btn primary-btn" onClick={runCode} disabled={running} style={{ padding: '4px 12px', fontSize: '13px' }}>
+            {running ? "Running..." : "Run"}
+          </button>
+        </div>
+        
+        <div style={{ flex: '1', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+          <div style={{ flex: '1.5', overflow: 'auto', borderBottom: '2px solid #333' }}>
+            <CodeMirror
+              value={ideCode}
+              height="100%"
+              theme={dracula}
+              extensions={[naturalLanguage]}
+              onChange={(val) => setIdeCode(val)}
+              className="codemirror-wrapper"
+              style={{ fontSize: '13px' }}
+            />
+          </div>
+          
+          <div style={{ flex: '1', display: 'flex', flexDirection: 'column', backgroundColor: '#1a1a1a' }}>
+            <div className="pane-header terminal-header" style={{ padding: '6px 12px' }}>
+              <h3>Output</h3>
+              <button className="icon-btn" onClick={clearTerminal} title="Clear Output">
+                🗑️
+              </button>
+            </div>
+            <div className="terminal-output" style={{ fontSize: '12px', padding: '12px' }}>
+              {terminalOutput.map((out, idx) => (
+                <div key={idx} className={out.startup ? "startup-msg" : (out.isError ? "output-line output-error" : "output-line")}>
+                  {out.text}
+                </div>
+              ))}
+              <div ref={endOfTerminalRef} />
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
