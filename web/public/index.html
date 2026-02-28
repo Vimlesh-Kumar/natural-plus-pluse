@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Natural++ Online Compiler</title>
+    <link rel="stylesheet" href="styles.css" />
+
+    <!-- Link to Google Fonts -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- CodeMirror for a nice editor experience -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/theme/dracula.min.css"
+    />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/addon/mode/simple.min.js"></script>
+  </head>
+  <body>
+    <div class="app-container">
+      <!-- Header -->
+      <header class="header">
+        <div class="logo">
+          <span class="logo-icon">🌿</span>
+          <h1>Natural++ <span class="badge">v1.0.0</span></h1>
+        </div>
+        <div class="header-actions">
+          <button id="run-btn" class="btn primary-btn">
+            <span class="icon">▶</span> Run Code
+          </button>
+        </div>
+      </header>
+
+      <!-- Main IDE Layout -->
+      <div class="ide-container">
+        <!-- Left Side: Editor -->
+        <div class="editor-pane">
+          <div class="pane-header">
+            <h3>main.npp</h3>
+          </div>
+          <!-- The Textarea that CodeMirror will replace -->
+          <textarea id="code-editor">
+note: Welcome to Natural++ Online!
+note: Try the code below and hit Run!
+
+create variable count equal to 1
+
+display "Counting to 5 natively:"
+
+while count is less than or equal to 5 do
+    if count is equal to 3 then
+        display "We hit three!"
+    otherwise 
+        display count
+    end if
+    
+    set count to count plus 1
+end while
+
+
+display "---"
+display "Natural++ executes in pure C++"
+</textarea
+          >
+        </div>
+
+        <!-- Right Side: Terminal Output -->
+        <div class="terminal-pane">
+          <div class="pane-header terminal-header">
+            <h3>Terminal</h3>
+            <button id="clear-btn" class="icon-btn" title="Clear terminal">
+              🗑️
+            </button>
+          </div>
+          <div id="terminal-output" class="terminal-output">
+            <div class="startup-msg">
+              System initialized. Ready to execute Natural++ code.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="script.js"></script>
+  </body>
+</html>

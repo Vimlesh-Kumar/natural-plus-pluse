@@ -1,0 +1,6 @@
+services:
+  - type: web
+    name: natural-lang-online
+    env: docker
+    dockerfilePath: Dockerfile
+    plan: free

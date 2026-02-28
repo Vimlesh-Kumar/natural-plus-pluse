@@ -1,0 +1,63 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "Natural++",
+  "patterns": [
+    {
+      "include": "#keywords"
+    },
+    {
+      "include": "#strings"
+    },
+    {
+      "include": "#comments"
+    },
+    {
+      "include": "#numbers"
+    },
+    {
+      "include": "#operators"
+    }
+  ],
+  "repository": {
+    "keywords": {
+      "patterns": [
+        {
+          "name": "keyword.control.natural",
+          "match": "\\b(if|then|otherwise|otherwise if|while|do|repeat|times|end if|end while|end repeat|end function|return)\\b"
+        },
+        {
+          "name": "keyword.declaration.natural",
+          "match": "\\b(create variable|create constant|set|to|define function|call function|with parameter|with parameters|with|as)\\b"
+        },
+        {
+          "name": "support.function.natural",
+          "match": "\\b(display|show|add)\\b"
+        }
+      ]
+    },
+    "strings": {
+      "name": "string.quoted.double.natural",
+      "begin": "\"",
+      "end": "\"",
+      "patterns": [
+        {
+          "name": "constant.character.escape.natural",
+          "match": "\\\\."
+        }
+      ]
+    },
+    "comments": {
+      "name": "comment.line.natural",
+      "match": "\\bnote:.*$"
+    },
+    "numbers": {
+      "name": "constant.numeric.natural",
+      "match": "\\b\\d+(\\.\\d+)?\\b"
+    },
+    "operators": {
+      "name": "keyword.operator.natural",
+      "match": "\\b(plus|minus|times|divided by|modulo|is equal to|is not equal to|is greater than or equal to|is less than or equal to|is greater than|is less than|and|or)\\b"
+    }
+  },
+  "scopeName": "source.natural"
+}

@@ -1,0 +1,36 @@
+{
+  "name": "natural-plus-plus",
+  "displayName": "Natural++",
+  "description": "Language support for Natural++",
+  "version": "1.0.0",
+  "publisher": "Vimlesh",
+  "engines": {
+    "vscode": "^1.74.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "contributes": {
+    "languages": [
+      {
+        "id": "natural",
+        "aliases": [
+          "Natural++",
+          "natural"
+        ],
+        "extensions": [
+          ".npp",
+          ".natural"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "natural",
+        "scopeName": "source.natural",
+        "path": "./syntaxes/natural.tmLanguage.json"
+      }
+    ]
+  }
+}

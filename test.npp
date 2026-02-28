@@ -1,0 +1,34 @@
+note: This is an example program in Natural++
+
+create variable max_count equal to 5
+create variable current equal to 1
+
+display "Counting from 1 to max_count:"
+
+while current is less than or equal to max_count do
+    if current is equal to 3 then
+        display "We hit three!"
+    otherwise if current is equal to 5 then
+        display "Final number!"
+    otherwise
+        display current
+    end if
+    set current to current plus 1
+end while
+
+
+define function greet with parameter name as
+    create variable message equal to "Hello, " plus name
+    display message
+    return true
+end function
+
+display "---"
+call function greet with "Vimlesh"
+
+display "---"
+display "Repeating a block:"
+
+repeat 3 times
+    display "Iteration"
+end repeat
