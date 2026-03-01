@@ -3,7 +3,7 @@
   "displayName": "Natural++",
   "description": "Language support for Natural++",
   "version": "1.0.0",
-  "publisher": "Vimlesh",
+  "publisher": "VimleshKumar",
   "engines": {
     "vscode": "^1.74.0"
   },
@@ -32,5 +32,9 @@
         "path": "./syntaxes/natural.tmLanguage.json"
       }
     ]
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Vimlesh-Kumar/natural-plus-pluse.git"
   }
 }
