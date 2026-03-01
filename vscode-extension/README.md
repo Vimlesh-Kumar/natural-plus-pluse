@@ -24,4 +24,4 @@ end while
 
 ## Running Natural++
 
-You can run your code natively through the [Natural++ Online IDE](https://github.com/Vimlesh-Kumar/natural-plus-pluse) or the compiled C++ engine natively on your system!
+You can run your code natively through the [Natural++ Online IDE](https://github.com/Vimlesh-Kumar/natural-pluse-pluse) or the compiled C++ engine natively on your system!
