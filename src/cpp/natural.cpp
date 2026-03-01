@@ -44,6 +44,16 @@ enum TokenType {
   NOT,
   LPAREN,
   RPAREN,
+  BY,
+
+  // Array & Object support
+  LIST,
+  OBJECT,
+  PROPERTY,
+  OF,
+  AT,
+  ADD,
+
   EOF_TOK
 };
 
@@ -119,11 +129,10 @@ public:
           type = PLUS;
         else if (text == "minus")
           type = MINUS;
-        else if (text == "times" && tokens.size() > 0 &&
-                 tokens.back().type != REPEAT && tokens.back().type != NUMBER)
-          type = TIMES_OP; // heuristic for times vs multiplication
         else if (text == "divided")
           type = DIVIDED_BY;
+        else if (text == "by")
+          type = BY;
         else if (text == "modulo")
           type = MODULO;
         else if (text == "is")
@@ -141,12 +150,24 @@ public:
         else if (text == "not")
           type = NOT;
 
+        // DP / OPPS keywords
+        else if (text == "list")
+          type = LIST;
+        else if (text == "object")
+          type = OBJECT;
+        else if (text == "property")
+          type = PROPERTY;
+        else if (text == "of")
+          type = OF;
+        else if (text == "at")
+          type = AT;
+        else if (text == "add")
+          type = ADD;
+
         // Hacky fix for "times" being used as both loop and multiply
         if (text == "times" && tokens.size() > 0 &&
             (tokens.back().type == NUMBER ||
              tokens.back().type == IDENTIFIER)) {
-          // Check context if it's multiply
-          // "5 times 2" vs "repeat 5 times"
           if (tokens.size() >= 2 && tokens[tokens.size() - 2].type == REPEAT)
             type = TIMES;
           else
@@ -179,24 +200,72 @@ public:
 // --- AST & INTERPRETER ---
 
 struct Value {
-  bool isString;
+  enum ValueType { V_NUMBER, V_STRING, V_LIST, V_OBJECT } type;
   double num;
   string str;
-  Value() : isString(false), num(0) {}
-  Value(double n) : isString(false), num(n) {}
-  Value(string s) : isString(true), str(s) {}
+  shared_ptr<vector<Value>> list_val;
+  shared_ptr<unordered_map<string, Value>> obj_val;
 
-  void print() {
-    if (isString)
-      cout << str << endl;
-    else
-      cout << num << endl;
+  Value() : type(V_NUMBER), num(0) {}
+  Value(double n) : type(V_NUMBER), num(n) {}
+  Value(string s) : type(V_STRING), str(s) {}
+
+  static Value createList() {
+    Value v;
+    v.type = V_LIST;
+    v.list_val = make_shared<vector<Value>>();
+    return v;
   }
 
+  static Value createObject() {
+    Value v;
+    v.type = V_OBJECT;
+    v.obj_val = make_shared<unordered_map<string, Value>>();
+    return v;
+  }
+
+  string stringify() const {
+    if (type == V_STRING)
+      return str;
+    if (type == V_NUMBER) {
+      string s = to_string(num);
+      s.erase(s.find_last_not_of('0') + 1, std::string::npos);
+      if (s.back() == '.')
+        s.pop_back();
+      return s;
+    }
+    if (type == V_LIST) {
+      string s = "[";
+      for (size_t i = 0; i < list_val->size(); i++) {
+        s += list_val->at(i).stringify();
+        if (i < list_val->size() - 1)
+          s += ", ";
+      }
+      s += "]";
+      return s;
+    }
+    if (type == V_OBJECT) {
+      string s = "{";
+      bool first = true;
+      for (auto const &pair : *obj_val) {
+        if (!first)
+          s += ", ";
+        s += pair.first + ": " + pair.second.stringify();
+        first = false;
+      }
+      return s + "}";
+    }
+    return "undefined";
+  }
+
+  void print() { cout << stringify() << endl; }
+
   bool isTruthy() {
-    if (isString)
+    if (type == V_STRING)
       return str.length() > 0;
-    return num != 0;
+    if (type == V_NUMBER)
+      return num != 0;
+    return true; // Array and obj are truthy
   }
 };
 
@@ -240,6 +309,44 @@ public:
   Value evaluate(Environment &env) override { return env.get(name); }
 };
 
+// Access List elements
+class ListAccessExpr : public Expr {
+  string name;
+  shared_ptr<Expr> indexExpr;
+
+public:
+  ListAccessExpr(string n, shared_ptr<Expr> idx) : name(n), indexExpr(idx) {}
+  Value evaluate(Environment &env) override {
+    Value arr = env.get(name);
+    int idx = (int)indexExpr->evaluate(env).num;
+    if (arr.type == Value::V_LIST && idx >= 0 && idx < arr.list_val->size()) {
+      return arr.list_val->at(idx);
+    }
+    return Value(0);
+  }
+};
+
+// Access Object elements
+class PropertyAccessExpr : public Expr {
+  shared_ptr<Expr> propExpr;
+  string objName;
+
+public:
+  PropertyAccessExpr(shared_ptr<Expr> prop, string obj)
+      : propExpr(prop), objName(obj) {}
+  Value evaluate(Environment &env) override {
+    Value obj = env.get(objName);
+    Value prop = propExpr->evaluate(env);
+    string key = prop.type == Value::V_STRING ? prop.str : to_string(prop.num);
+
+    if (obj.type == Value::V_OBJECT &&
+        obj.obj_val->find(key) != obj.obj_val->end()) {
+      return obj.obj_val->at(key);
+    }
+    return Value(0);
+  }
+};
+
 class BinaryExpr : public Expr {
   shared_ptr<Expr> left;
   TokenType op;
@@ -253,19 +360,8 @@ public:
     Value r = right->evaluate(env);
 
     if (op == PLUS) {
-      if (l.isString || r.isString) {
-        string ls = l.isString ? l.str : to_string(l.num);
-        string rs = r.isString ? r.str : to_string(r.num);
-        // Remove trailing zeros for numbers
-        if (!l.isString)
-          ls.erase(ls.find_last_not_of('0') + 1, std::string::npos);
-        if (!l.isString && ls.back() == '.')
-          ls.pop_back();
-        if (!r.isString)
-          rs.erase(rs.find_last_not_of('0') + 1, std::string::npos);
-        if (!r.isString && rs.back() == '.')
-          rs.pop_back();
-        return Value(ls + rs);
+      if (l.type == Value::V_STRING || r.type == Value::V_STRING) {
+        return Value(l.stringify() + r.stringify());
       }
       return Value(l.num + r.num);
     }
@@ -274,7 +370,7 @@ public:
     if (op == TIMES_OP)
       return Value(l.num * r.num);
     if (op == EQUAL)
-      return Value(l.num == r.num ? 1 : 0);
+      return Value(l.num == r.num && l.str == r.str ? 1 : 0);
     if (op == LESS)
       return Value(l.num < r.num ? 1 : 0);
 
@@ -306,6 +402,16 @@ public:
   }
 };
 
+// Object/List creation fake exprs (helper nodes)
+class ObjCreateExpr : public Expr {
+public:
+  Value evaluate(Environment &env) override { return Value::createObject(); }
+};
+class ListCreateExpr : public Expr {
+public:
+  Value evaluate(Environment &env) override { return Value::createList(); }
+};
+
 class AssignStmt : public Stmt {
   string name;
   shared_ptr<Expr> value;
@@ -314,6 +420,58 @@ public:
   AssignStmt(string n, shared_ptr<Expr> v) : name(n), value(v) {}
   void execute(Environment &env) override {
     env.assign(name, value->evaluate(env));
+  }
+};
+
+class ListAssignStmt : public Stmt {
+  string name;
+  shared_ptr<Expr> indexExpr;
+  shared_ptr<Expr> value;
+
+public:
+  ListAssignStmt(string n, shared_ptr<Expr> idx, shared_ptr<Expr> val)
+      : name(n), indexExpr(idx), value(val) {}
+  void execute(Environment &env) override {
+    Value arr = env.get(name);
+    int idx = (int)indexExpr->evaluate(env).num;
+    if (arr.type == Value::V_LIST) {
+      while (arr.list_val->size() <= idx)
+        arr.list_val->push_back(Value(0));
+      arr.list_val->at(idx) = value->evaluate(env);
+    }
+  }
+};
+
+class PropertyAssignStmt : public Stmt {
+  string name;
+  shared_ptr<Expr> propExpr;
+  shared_ptr<Expr> value;
+
+public:
+  PropertyAssignStmt(string n, shared_ptr<Expr> p, shared_ptr<Expr> v)
+      : name(n), propExpr(p), value(v) {}
+  void execute(Environment &env) override {
+    Value obj = env.get(name);
+    Value prop = propExpr->evaluate(env);
+    string key = prop.type == Value::V_STRING ? prop.str : prop.stringify();
+
+    if (obj.type == Value::V_OBJECT) {
+      (*obj.obj_val)[key] = value->evaluate(env);
+    }
+  }
+};
+
+class AddToListStmt : public Stmt {
+  string name;
+  shared_ptr<Expr> value;
+
+public:
+  AddToListStmt(string n, shared_ptr<Expr> v) : name(n), value(v) {}
+  void execute(Environment &env) override {
+    Value arr = env.get(name);
+    if (arr.type == Value::V_LIST) {
+      arr.list_val->push_back(value->evaluate(env));
+    }
   }
 };
 
@@ -429,8 +587,24 @@ class Parser {
       return make_shared<LiteralExpr>(Value(stod(previous().lexeme)));
     if (match(STRING_LIT))
       return make_shared<LiteralExpr>(Value(previous().lexeme));
-    if (match(IDENTIFIER))
-      return make_shared<VariableExpr>(previous().lexeme);
+
+    // DP/OPPS properties in expressions
+    if (match(PROPERTY)) {
+      auto propName = primary();
+      consume(OF, "Expected 'of'");
+      string objName = advance().lexeme;
+      return make_shared<PropertyAccessExpr>(propName, objName);
+    }
+
+    if (match(IDENTIFIER)) {
+      string name = previous().lexeme;
+      if (match(AT)) {
+        auto listIdx = expression();
+        return make_shared<ListAccessExpr>(name, listIdx);
+      }
+      return make_shared<VariableExpr>(name);
+    }
+
     if (match(LPAREN)) {
       auto expr = expression();
       consume(RPAREN, "Expected ')'");
@@ -452,23 +626,57 @@ public:
 
   shared_ptr<Stmt> statement() {
     if (match(CREATE)) {
-      match(VARIABLE);
-      match(CONSTANT);
-      string name = advance().lexeme;
-      consume(EQUAL, "Expected 'equal'");
-      consume(TO, "Expected 'to'");
-      auto init = expression();
-      return make_shared<VarDeclStmt>(name, init);
+      if (match(VARIABLE) || match(CONSTANT)) {
+        string name = advance().lexeme;
+        consume(EQUAL, "Expected 'equal'");
+        consume(TO, "Expected 'to'");
+        auto init = expression();
+        return make_shared<VarDeclStmt>(name, init);
+      } else if (match(LIST)) {
+        string name = advance().lexeme;
+        return make_shared<VarDeclStmt>(name, make_shared<ListCreateExpr>());
+      } else if (match(OBJECT)) {
+        string name = advance().lexeme;
+        return make_shared<VarDeclStmt>(name, make_shared<ObjCreateExpr>());
+      }
     }
+
+    // Set operations
     if (match(SET)) {
-      string name = advance().lexeme;
-      consume(TO, "Expected 'to'");
-      auto val = expression();
-      return make_shared<AssignStmt>(name, val);
+      if (match(PROPERTY)) {
+        auto propName = primary();
+        consume(OF, "Expected 'of'");
+        string objName = advance().lexeme;
+        consume(TO, "Expected 'to'");
+        auto valExpr = expression();
+        return make_shared<PropertyAssignStmt>(objName, propName, valExpr);
+      } else {
+        string name = advance().lexeme;
+        if (match(AT)) {
+          auto indexExpr = expression();
+          consume(TO, "Expected 'to'");
+          auto valExpr = expression();
+          return make_shared<ListAssignStmt>(name, indexExpr, valExpr);
+        } else {
+          consume(TO, "Expected 'to'");
+          auto val = expression();
+          return make_shared<AssignStmt>(name, val);
+        }
+      }
     }
+
+    // Add to list
+    if (match(ADD)) {
+      auto valExpr = expression();
+      consume(TO, "Expected 'to'");
+      string name = advance().lexeme;
+      return make_shared<AddToListStmt>(name, valExpr);
+    }
+
     if (match(DISPLAY) || match(SHOW)) {
       return make_shared<PrintStmt>(expression());
     }
+
     if (match(WHILE)) {
       auto condition = expression();
       consume(DO, "Expected 'do'");
@@ -490,7 +698,7 @@ public:
       }
       if (match(OTHERWISE)) {
         if (match(IF)) {
-          // otherwise if -> not fully mapped in this mini parser
+          // nested ifs not mapped properly via 'otherwise if' naive loop
         } else {
           while (!isAtEnd() && peek().type != END) {
             elseBranch.push_back(statement());
