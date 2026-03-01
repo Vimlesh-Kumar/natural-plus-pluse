@@ -171,6 +171,8 @@ display "Hello World!"\
           </Link>
         </div>
         <h2>Natural++ Tutorial</h2>
+
+        <div className="sidebar-group-label">Beginner Topics</div>
         <a href="#home" className={activeSection === "home" ? "active" : ""}>
           Natural++ Home
         </a>
@@ -190,28 +192,10 @@ display "Hello World!"\
           Natural++ Syntax
         </a>
         <a
-          href="#output"
-          className={activeSection === "output" ? "active" : ""}
-        >
-          Natural++ Output
-        </a>
-        <a
-          href="#comments"
-          className={activeSection === "comments" ? "active" : ""}
-        >
-          Natural++ Comments
-        </a>
-        <a
           href="#variables"
           className={activeSection === "variables" ? "active" : ""}
         >
-          Natural++ Variables
-        </a>
-        <a
-          href="#datatypes"
-          className={activeSection === "datatypes" ? "active" : ""}
-        >
-          Natural++ Data Types
+          Variables & Data Types
         </a>
         <a
           href="#operators"
@@ -220,37 +204,108 @@ display "Hello World!"\
           Natural++ Operators
         </a>
         <a
-          href="#booleans"
-          className={activeSection === "booleans" ? "active" : ""}
+          href="#output"
+          className={activeSection === "output" ? "active" : ""}
         >
-          Natural++ Booleans
+          Input / Output
         </a>
         <a
           href="#conditions"
           className={activeSection === "conditions" ? "active" : ""}
         >
-          Natural++ Conditions
+          Control Flow: If...Then
         </a>
         <a
-          href="#whileloop"
-          className={activeSection === "whileloop" ? "active" : ""}
+          href="#loops"
+          className={
+            activeSection === "whileloop" ||
+            activeSection === "repeatloop" ||
+            activeSection === "loops"
+              ? "active"
+              : ""
+          }
         >
-          Natural++ While Loop
+          Control Flow: Loops
         </a>
         <a
-          href="#repeatloop"
-          className={activeSection === "repeatloop" ? "active" : ""}
+          href="#functions"
+          className={activeSection === "functions" ? "active" : ""}
         >
-          Natural++ Repeat Loop
+          Functions & Recursion
         </a>
+
+        <div className="sidebar-group-label" style={{ marginTop: "16px" }}>
+          Intermediate Topics
+        </div>
         <a href="#lists" className={activeSection === "lists" ? "active" : ""}>
-          Natural++ Arrays (DP)
+          Arrays & Lists (DP)
+        </a>
+        <a
+          href="#pointers"
+          className={activeSection === "pointers" ? "active" : ""}
+        >
+          Pointers & References
+        </a>
+        <a
+          href="#structures"
+          className={activeSection === "structures" ? "active" : ""}
+        >
+          Structures & Unions
         </a>
         <a
           href="#objects"
           className={activeSection === "objects" ? "active" : ""}
         >
-          Natural++ Objects (OOP)
+          Object-Oriented (OOP)
+        </a>
+        <a href="#stl" className={activeSection === "stl" ? "active" : ""}>
+          Standard Templates (STL)
+        </a>
+        <a
+          href="#exceptions"
+          className={activeSection === "exceptions" ? "active" : ""}
+        >
+          Exception Handling
+        </a>
+        <a
+          href="#fileio"
+          className={activeSection === "fileio" ? "active" : ""}
+        >
+          File Handling
+        </a>
+
+        <div className="sidebar-group-label" style={{ marginTop: "16px" }}>
+          Advanced Topics
+        </div>
+        <a
+          href="#modern"
+          className={activeSection === "modern" ? "active" : ""}
+        >
+          Modern C++ (11/14/17/20)
+        </a>
+        <a
+          href="#concurrency"
+          className={activeSection === "concurrency" ? "active" : ""}
+        >
+          Concurrency & Threads
+        </a>
+        <a
+          href="#memory"
+          className={activeSection === "memory" ? "active" : ""}
+        >
+          Advanced Memory Management
+        </a>
+        <a
+          href="#metaprogramming"
+          className={activeSection === "metaprogramming" ? "active" : ""}
+        >
+          Metaprogramming
+        </a>
+        <a
+          href="#designpatterns"
+          className={activeSection === "designpatterns" ? "active" : ""}
+        >
+          Design Patterns
         </a>
       </div>
 
@@ -263,7 +318,6 @@ display "Hello World!"\
             </p>
           </div>
         </div>
-
         {/* HOME */}
         <section id="home">
           <h2 className="section-title">Natural++ Tutorial</h2>
@@ -290,9 +344,7 @@ while count is less than or equal to 5 do\
 end while`}
           />
         </section>
-
         <hr />
-
         {/* INTRO */}
         <section id="intro">
           <h2 className="section-title">Natural++ Introduction</h2>
@@ -320,9 +372,7 @@ end while`}
             </li>
           </ul>
         </section>
-
         <hr />
-
         <section id="getstarted">
           <h2 className="section-title">Natural++ Get Started</h2>
           <p>
@@ -333,9 +383,7 @@ end while`}
             right!
           </p>
         </section>
-
         <hr />
-
         <section id="syntax">
           <h2 className="section-title">Natural++ Syntax</h2>
           <p>
@@ -366,9 +414,7 @@ display "Hello World!"`}
             </li>
           </ul>
         </section>
-
         <hr />
-
         <section id="output">
           <h2 className="section-title">Natural++ Output (Print)</h2>
           <p>
@@ -391,9 +437,7 @@ show "It is very easy to read!"`}
 display 300`}
           />
         </section>
-
         <hr />
-
         <section id="comments">
           <h2 className="section-title">Natural++ Comments</h2>
           <p>
@@ -412,9 +456,7 @@ note: This is a comment\
 display "Hello World!"`}
           />
         </section>
-
         <hr />
-
         <section id="variables">
           <h2 className="section-title">Natural++ Variables</h2>
           <p>Variables are containers for storing data values.</p>
@@ -462,9 +504,7 @@ note: x is now 20\
 display x`}
           />
         </section>
-
         <hr />
-
         <section id="lists">
           <h2 className="section-title">Natural++ Arrays / Lists (DP)</h2>
           <p>
@@ -474,7 +514,13 @@ display x`}
           <h3>Creating and Adding to a List</h3>
           <CodeBlock
             onTryIt={loadExample}
-            code={`note: Create an empty array\ncreate list my_list\n\nadd 10 to my_list\nadd 20 to my_list\n\nshow my_list`}
+            code={`note: Create an empty array
+create list my_list
+
+add 10 to my_list
+add 20 to my_list
+
+show my_list`}
           />
 
           <h3>Accessing and Modifying using 'at'</h3>
@@ -484,12 +530,16 @@ display x`}
           </p>
           <CodeBlock
             onTryIt={loadExample}
-            code={`create list scores\n\nset scores at 0 to 95\nset scores at 1 to 87\n\nshow "First score is:"\nshow scores at 0`}
+            code={`create list scores
+
+set scores at 0 to 95
+set scores at 1 to 87
+
+show "First score is:"
+show scores at 0`}
           />
         </section>
-
         <hr />
-
         <section id="objects">
           <h2 className="section-title">Natural++ Objects (OOPs)</h2>
           <p>
@@ -504,12 +554,16 @@ display x`}
           </p>
           <CodeBlock
             onTryIt={loadExample}
-            code={`create object player\n\nset property "name" of player to "Hero"\nset property "health" of player to 100\n\nnote: Accessing properties is purely sentences!\ndisplay property "health" of player`}
+            code={`create object player
+
+set property "name" of player to "Hero"
+set property "health" of player to 100
+
+note: Accessing properties is purely sentences!
+display property "health" of player`}
           />
         </section>
-
         <hr />
-
         <section id="datatypes">
           <h2 className="section-title">Natural++ Data Types</h2>
           <p>
@@ -525,9 +579,7 @@ display x`}
             </li>
           </ul>
         </section>
-
         <hr />
-
         <section id="operators">
           <h2 className="section-title">Natural++ Operators</h2>
           <p>
@@ -646,9 +698,7 @@ display sum`}
             </tbody>
           </table>
         </section>
-
         <hr />
-
         <section id="booleans">
           <h2 className="section-title">Natural++ Booleans</h2>
           <p>
@@ -667,9 +717,7 @@ if x is greater than y then\
 end if`}
           />
         </section>
-
         <hr />
-
         <section id="conditions">
           <h2 className="section-title">
             Natural++ Conditions and If Statements
@@ -737,9 +785,7 @@ otherwise\
 end if`}
           />
         </section>
-
         <hr />
-
         <section id="whileloop">
           <h2 className="section-title">Natural++ While Loop</h2>
           <p>
@@ -758,9 +804,7 @@ while i is less than 5 do\
 end while`}
           />
         </section>
-
         <hr />
-
         <section id="repeatloop">
           <h2 className="section-title">Natural++ Repeat Loop</h2>
           <p>
@@ -776,8 +820,132 @@ repeat 3 times\
 end repeat`}
           />
         </section>
-
-        <div style={{ paddingBottom: "100px" }}></div>
+        <hr />
+        <section id="functions">
+          <h2 className="section-title">Functions & Recursion</h2>
+          <p>
+            Functions are the building blocks of reusable logic. In Natural++,
+            you can safely abstract code implementation details through simple
+            English clauses!
+          </p>
+          <CodeBlock
+            onTryIt={loadExample}
+            code={`define function say_hello as\n    display "Hello World!"\nend function\n\ncall function say_hello`}
+          />
+          <h3>Recursion Example</h3>
+          <p>
+            Functions can call themselves repeatedly to solve iterative
+            problems.
+          </p>
+          <CodeBlock
+            onTryIt={loadExample}
+            code={`create variable counter equal to 0\ndefine function recurse as\n    if counter is less than 5 then\n        display counter\n        set counter to counter plus 1\n        call function recurse\n    end if\nend function\n\ncall function recurse`}
+          />
+        </section>
+        <hr />
+        <section id="pointers">
+          <h2 className="section-title">Pointers & References (C++ Backend)</h2>
+          <p>
+            While traditional C++ requires raw memory manipulation using{" "}
+            <code>*</code> and <code>&amp;</code>, Natural++ handles memory
+            tracing automatically under the hood via the AST Virtual Machine and
+            GC routines. Memory addresses are automatically dereferenced for
+            you.
+          </p>
+          <div
+            className="callout"
+            style={{ backgroundColor: "rgba(255,165,0,0.1)" }}
+          >
+            <p>
+              <strong>Note:</strong> Advanced memory references are planned for
+              future versions to allow exact C++ parity via syntax like{" "}
+              <code>reference of [var]</code>.
+            </p>
+          </div>
+        </section>
+        <hr />
+        <section id="structures">
+          <h2 className="section-title">Structures & Unions</h2>
+          <p>
+            In C++, Structures (<code>struct</code>) and Unions are used to
+            group different data types. In Natural++, <strong>Objects</strong>{" "}
+            fulfill the exact same requirement dynamically.
+          </p>
+          <p>
+            Refer to the <strong>Object-Oriented (OOP)</strong> section to see
+            how to group dissimilar data items together natively!
+          </p>
+        </section>
+        <hr />
+        <section id="stl">
+          <h2 className="section-title">Standard Template Library (STL)</h2>
+          <p>
+            Natural++ simplifies the massive STL library of C++. Instead of
+            including <code>&lt;vector&gt;</code>, <code>&lt;map&gt;</code>, or{" "}
+            <code>&lt;set&gt;</code>, we've generalized all iterators into our{" "}
+            <code>list</code> and <code>object</code> types.
+          </p>
+          <ul>
+            <li>
+              <strong>std::vector</strong> =&gt; <code>create list array</code>
+            </li>
+            <li>
+              <strong>std::map</strong> =&gt; <code>create object dict</code>
+            </li>
+          </ul>
+        </section>
+        <hr />
+        <section id="exceptions">
+          <h2 className="section-title">Exception Handling</h2>
+          <p>
+            Natural++ parses runtime conditions safely. If you attempt an
+            invalid operation, the VM halts securely. Native{" "}
+            <code>try...catch</code> English descriptors are on the roadmap for
+            v2!
+          </p>
+        </section>
+        <hr />
+        <section id="fileio">
+          <h2 className="section-title">File Handling Streams</h2>
+          <p>
+            C++ utilizes <code>fstream</code> for system I/O. Natural++ will
+            wrap this in simple command verbs soon: e.g.,{" "}
+            <code>read from file "data.txt"</code>.
+          </p>
+        </section>
+        <hr />
+        <section id="modern">
+          <h2 className="section-title">Modern C++ (11/14/17/20)</h2>
+          <p>
+            Features like <strong>Lambda Expressions</strong>,{" "}
+            <strong>auto typing</strong>, and <strong>Move Semantics</strong>{" "}
+            are implicitly guaranteed because Natural++ uses an untyped parsing
+            evaluation tree, effectively treating every initialized variable
+            implicitly as <code>std::any</code> or <code>auto</code> natively in
+            the compiler wrapper!
+          </p>
+        </section>
+        <hr />
+        <section id="concurrency">
+          <h2 className="section-title">Concurrency & Multithreading</h2>
+          <p>
+            Parallel processing via <code>std::thread</code> will be exposed to
+            the AST in future releases via the <code>run synchronously</code>{" "}
+            and <code>run asynchronously</code> descriptors.
+          </p>
+        </section>
+        <hr />
+        <section id="metaprogramming">
+          <h2 className="section-title">Metaprogramming & Smart Pointers</h2>
+          <p>
+            Behind the scenes, the Natural++ standard library uses{" "}
+            <code>shared_ptr</code> to manage <code>Environment</code> scopes
+            and memory cleanup to avoid leaks seamlessly. You never have to
+            manually call <code>delete</code> or write template constraints in
+            Natural++!
+          </p>
+        </section>
+        <div style={{ paddingBottom: "100px" }}></div>{" "}
       </div>
 
       <div className="docs-ide-pane">
